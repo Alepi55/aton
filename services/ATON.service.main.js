@@ -26,6 +26,11 @@ const Core = require('./Core');
 const Auth = require('./Auth');
 const Render = require('./Render');
 const API  = require("./API/v2"); // v2
+const sessionsPath = path.join(__dirname, '..', 'sessions');
+if (!fs.existsSync(sessionsPath)) {
+	fs.mkdirSync(sessionsPath, { recursive: true });
+	console.log("✔️ Cartella 'sessions/' creata automaticamente.");
+}
 
 
 // Initialize & load config files
