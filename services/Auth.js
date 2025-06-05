@@ -17,7 +17,8 @@ const cookieParser   = require('cookie-parser');
 const session        = require('express-session');
 const FileStore      = require('session-file-store')(session);
 
-
+const path = require('path');
+const fs = require('fs');
 
 let Auth = {};
 
@@ -29,8 +30,6 @@ Core.passport = passport;
 Auth.init = (app)=>{
     Auth.setupPassport();
 
-	const path = require('path');
-const fs = require('fs');
 
 // Percorso assoluto per la cartella sessions
 const sessionsPath = path.join(__dirname, '..', 'sessions');
@@ -45,7 +44,6 @@ let fileStoreOptions = {
 };
 
 
-	let bodyParser = require('body-parser');
 	app.use(bodyParser.json({ limit: '50mb' }));
 	app.use(bodyParser.urlencoded({ limit: '50mb', extended: true, parameterLimit: 50000 }));
 
