@@ -22,16 +22,18 @@ const glob   = require("glob");
 const nanoid = require("nanoid");
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
-const Core = require('./Core');
-const Auth = require('./Auth');
-const Render = require('./Render');
-const API  = require("./API/v2"); // v2
+// ✅ CREA la cartella 'sessions' prima di tutto
 const sessionsPath = path.join(__dirname, '..', 'sessions');
 if (!fs.existsSync(sessionsPath)) {
 	fs.mkdirSync(sessionsPath, { recursive: true });
 	console.log("✔️ Cartella 'sessions/' creata automaticamente.");
 }
 
+// Ora è sicuro importare i moduli che la usano
+const Core = require('./Core');
+const Auth = require('./Auth');
+const Render = require('./Render');
+const API  = require("./API/v2"); // v2
 
 // Initialize & load config files
 Core.init();
@@ -47,7 +49,7 @@ let PORT_WEBDAV = 8081;
 
 if (CONF.services.main.PORT) 
 	PORT = CONF.services.main.PORT;
-	
+
 if (process.env.PORT)
 	PORT = process.env.PORT;
 
@@ -77,86 +79,42 @@ let bExamples = CONF.services.main.examples;
 // Debug on req received (client)
 let logger = function(req, res, next){
     console.log('Request from: ' + req.ip + ' For: ' + req.path);
-    next(); // Run the next handler
+    next();
 };
-
 
 let app = express();
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 
-
 //app.set('trust proxy', 1); 	// trust first proxy
-
 //app.use(compression());
 
 app.use(cors({
 	credentials: true,
 	origin: true
 }));
-/*
-app.use((req, res, next)=>{
-	res.header("Access-Control-Allow-Origin", "*");
-	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-	next();
-});
-*/
+
 app.use(express.json({ limit: '50mb' }));
-
-// Scenes redirect /s/<sid>
-/*
-app.get(/^\/s\/(.*)$/, function(req,res,next){
-	let sid = req.params[0];
-
-	//req.url     = "/fe";
-	//req.query.s = sid;
-	
-	res.redirect(url.format({
-		pathname:"/fe",
-		query: { "s": sid }
-	}));
-
-	next();
-});
-*/
-
-// Data routing (advanced)
-//Core.setupDataRoute(app);
 
 const CACHING_OPT = {
 	maxage: "3h"
 };
 
 app.use('/', express.static(Core.DIR_PUBLIC, CACHING_OPT ));
-
-// Official front-end (Hathor)
-//app.use('/fe', express.static(Core.DIR_FE));
-
-// Common public resources (config/public/)
 if (fs.existsSync(Core.DIR_CONFIGPUB)) app.use('/common', express.static(Core.DIR_CONFIGPUB));
-
-// Web-apps
 app.use('/a', express.static(Core.DIR_WAPPS));
-
-// Data (static)
 app.use('/', express.static(Core.DIR_DATA, CACHING_OPT));
 
-// Setup authentication
+// 🔐 Auth
 Auth.init(app);
 
-
 // REST API
-Core.realizeBaseAPI(app); 	// v1 (for backward compatibility)
-API.init( app );			// v2
-
+Core.realizeBaseAPI(app);
+API.init(app);
 
 // Rendering
 Core.Render.setup(app);
 
-
 // Micro-services proxies
-//=================================================
-
-// Photon (previously VRoadcast)
 app.use('/vrc', createProxyMiddleware({ 
 	target: VRC_ADDR+":"+VRC_PORT, 
 	ws: true, 
@@ -171,40 +129,21 @@ app.use('/svrc', createProxyMiddleware({
 	changeOrigin: true 
 }));
 
-// WebDav
-/*
-app.use('/dav', createProxyMiddleware({ 
-	//target: CONF.services.webdav.address+":"+PORT_WEBDAV, 
-	target: "http://localhost:"+PORT_WEBDAV,
-	pathRewrite: { '^/dav': ''},
-	changeOrigin: false, //true,
-	//xfwd: true,
-	//secure: true,
-
-	//router: { "/dav" : "http://localhost:"+PORT_WEBDAV }
-}));
-*/
-
-// Collect & setup flares (if found)
-//==================================
+// Flares
 Core.setupFlares(app);
-
 for (let fid in Core.flares){
-	//let fid = Core.flares[f];
 	app.use('/flares/'+fid, express.static(Core.DIR_FLARES+fid+"/public/"));
 }
 
 // START
-//==================================
 http.createServer(app).listen(PORT, ()=>{
 	Core.logGreen("\nATON up and running!");
 	console.log("- OFFLINE: http://localhost:"+PORT);
 	for (let n in Core.nets) console.log("- NETWORK ('"+n+"'): http://"+Core.nets[n][0]+":"+PORT);
-	
 	console.log("\n");
 });
 
-// HTTPS service
+// HTTPS
 if (fs.existsSync(pathCert) && fs.existsSync(pathKey)){
 	let httpsOptions = {
 		key: fs.readFileSync(pathKey, 'utf8'),
@@ -215,11 +154,8 @@ if (fs.existsSync(pathCert) && fs.existsSync(pathKey)){
 		Core.logGreen("\nHTTPS ATON up and running!");
 		console.log("- OFFLINE: https://localhost:"+PORT_SECURE);
 		for (let n in Core.nets) console.log("- NETWORK ('"+n+"'): https://"+Core.nets[n][0]+":"+PORT_SECURE);
-		
 		console.log("\n");
 	});
-}
-else {
-	console.log("\nSSL certs not found:\n"+pathKey+"\n"+pathCert);
-	console.log("\n");
+} else {
+	console.log("\nSSL certs not found:\n"+pathKey+"\n"+pathCert+"\n");
 }
