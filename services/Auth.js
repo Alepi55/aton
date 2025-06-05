@@ -23,6 +23,7 @@ let Auth = {};
 Core.Auth = Auth;
 Core.passport = passport;
 
+
 Auth.init = (app) => {
     Auth.setupPassport();
 
