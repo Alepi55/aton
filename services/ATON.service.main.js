@@ -77,6 +77,8 @@ let logger = function(req, res, next){
 
 
 let app = express();
+app.use('/admin', express.static(path.join(__dirname, 'admin')));
+
 
 //app.set('trust proxy', 1); 	// trust first proxy
 
