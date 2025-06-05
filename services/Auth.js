@@ -29,9 +29,21 @@ Core.passport = passport;
 Auth.init = (app)=>{
     Auth.setupPassport();
 
-	let fileStoreOptions = {
-		fileExtension: ".ses"
-	};
+	const path = require('path');
+const fs = require('fs');
+
+// Percorso assoluto per la cartella sessions
+const sessionsPath = path.join(__dirname, '..', 'sessions');
+if (!fs.existsSync(sessionsPath)) {
+	fs.mkdirSync(sessionsPath, { recursive: true });
+	console.log("✔️ Cartella 'sessions/' creata automaticamente.");
+}
+
+let fileStoreOptions = {
+	path: sessionsPath,
+	fileExtension: ".ses"
+};
+
 
 	let bodyParser = require('body-parser');
 	app.use(bodyParser.json({ limit: '50mb' }));
