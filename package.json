@@ -97,7 +97,8 @@
     "webdav-server": "^2.6.2",
     "ws": "^8.18.2",
     "zlibjs": "^0.3.1",
-    "connect-mongo": "^5.0.0"
+   "connect-mongo": "^3.2.0"
+
 
   }
 }
