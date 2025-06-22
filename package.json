@@ -50,7 +50,8 @@
     "since 2017-06"
   ],
   "dependencies": {
-    "@atonframework/shu-auth": "^1.0.0",
+    "connect-mongo": "^3.2.0",
+     bcrypt": "^5.1.1",      
     "@gltf-transform/cli": "^4.2.0",
     "@gltf-transform/core": "^4.2.0",
     "@gltf-transform/extensions": "^4.2.0",
@@ -101,8 +102,8 @@
     "three-mesh-bvh": "0.9.0",
     "webdav-server": "^2.6.2",
     "ws": "^8.18.2",
-    "zlibjs": "^0.3.1",
-   "connect-mongo": "^3.2.0"
+    "zlibjs": "^0.3.1"
+   
 
 
 
