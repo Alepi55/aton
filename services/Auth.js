@@ -16,6 +16,29 @@ let Strategy = require('passport-local').Strategy;
 const cookieParser   = require('cookie-parser');
 const session        = require('express-session');
 const FileStore      = require('session-file-store')(session);
+const router  = require('express').Router();
+const bcrypt  = require('bcrypt');              // per il check
+const UserDB  = require('../Core').UserDB;      // la tua utility che legge users.json
+const session = require('express-session');
+
+router.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  const user = UserDB.find(u => u.username === username);
+  if (!user) return res.json({ success:false });
+
+  const ok = user.password.startsWith('$2a$')
+             ? await bcrypt.compare(password, user.password)   // hash
+             : password === user.password;                    // plain
+
+  if (!ok) return res.json({ success:false });
+
+  req.session.user = { username, roles:user.roles };
+  res.json({ success:true });
+});
+
+router.post('/logout', (req,res)=>{ req.session.destroy(_=>res.json({success:true})); });
+
+module.exports = router;
 
 
 
