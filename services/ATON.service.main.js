@@ -7,6 +7,8 @@
 	VHLab, CNR ISPC
 
 ==================================================================================*/
+const authRouter = require('@atonframework/shu-auth').router;
+app.use('/shu/auth', authRouter);
 
 const fs          = require('fs');
 const express     = require('express');
